@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Widget Test</title>
+  <link rel="stylesheet" href="./css/chat_widget.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Chat Widget Test Page</h1>
+    <p>This page is testing the chat widget functionality.</p>
+    <p>You should see a floating chat button in the bottom right corner.</p>
+  </div>
+
+  <script src="./js/chat_widget.js"></script>
+  <script>
+    // Initialize the chat widget after the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize with a demo user ID
+      if (typeof window.ChatWidget !== 'undefined') {
+        window.ChatWidget.init(1);
+      } else {
+        console.error('ChatWidget not loaded');
+      }
+    });
+  </script>
+</body>
+</html>

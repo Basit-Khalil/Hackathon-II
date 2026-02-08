@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .sidebar {
+            min-height: calc(100vh - 56px);
+            background: linear-gradient(to bottom, #343a40, #495057);
+            color: white;
+        }
+        .main-content {
+            min-height: calc(100vh - 56px);
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,.1);
+        }
+        .stat-card {
+            border-left: 4px solid #007bff;
+        }
+        .chatbot-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 8px rgba(0,0,0,.3);
+            z-index: 1000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .chatbot-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0,0,0,.4);
+        }
+        .chatbot-window {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,.3);
+            display: none;
+            flex-direction: column;
+            z-index: 1001;
+            overflow: hidden;
+        }
+        .chat-header {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 18px;
+            max-width: 80%;
+        }
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+        .bot-message {
+            background: #e9ecef;
+            color: #333;
+            margin-right: auto;
+        }
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #dee2e6;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 20px;
+            outline: none;
+        }
+        .chat-input button {
+            margin-left: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        .close-chat {
+            cursor: pointer;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="fas fa-tasks me-2"></i>Todo Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="fas fa-home me-1"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-list me-1"></i> My Tasks</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-calendar me-1"></i> Calendar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-chart-bar me-1"></i> Analytics</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-user me-1"></i> Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="chatbot.html" target="_blank" id="chatbotNavBtn"><i class="fas fa-robot me-1"></i> Chat Assistant</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 sidebar p-4 d-none d-md-block">
+                <h5 class="mb-4">Quick Actions</h5>
+                <div class="list-group mb-4">
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-plus-circle me-2"></i>Add New Task
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-sync-alt me-2"></i>Refresh Tasks
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-filter me-2"></i>Filter Tasks
+                    </a>
+                </div>
+                
+                <h5 class="mt-4 mb-3">Statistics</h5>
+                <div class="card bg-transparent border-light">
+                    <div class="card-body text-white">
+                        <p class="card-text">Total Tasks: 12</p>
+                        <p class="card-text">Completed: 8</p>
+                        <p class="card-text">Pending: 4</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="col-md-9 main-content p-4">
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Tasks</h5>
+                                <h2 class="text-primary">12</h2>
+                                <p class="text-muted">+2 from yesterday</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Completed</h5>
+                                <h2 class="text-success">8</h2>
+                                <p class="text-muted">67% completion</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Pending</h5>
+                                <h2 class="text-warning">4</h2>
+                                <p class="text-muted">33% remaining</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Overdue</h5>
+                                <h2 class="text-danger">1</h2>
+                                <p class="text-muted">1 urgent task</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Recent Tasks</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Task</th>
+                                                <th>Status</th>
+                                                <th>Due Date</th>
+                                                <th>Priority</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Complete project proposal</td>
+                                                <td><span class="badge bg-success">Completed</span></td>
+                                                <td>2023-06-15</td>
+                                                <td><span class="badge bg-info">High</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary">Edit</button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Review quarterly reports</td>
+                                                <td><span class="badge bg-warning">Pending</span></td>
+                                                <td>2023-06-20</td>
+                                                <td><span class="badge bg-warning">Medium</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary">Edit</button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Team meeting preparation</td>
+                                                <td><span class="badge bg-danger">Overdue</span></td>
+                                                <td>2023-06-10</td>
+                                                <td><span class="badge bg-danger">Urgent</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary">Edit</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Chatbot Button -->
+    <div class="chatbot-btn" id="floatingChatbotBtn" title="Open Chat Assistant" onclick="window.open('chatbot.html', '_blank', 'width=900,height=700,resizable=yes,scrollbars=yes')">
+        <i class="fas fa-robot"></i>
+    </div>
+
+    <!-- Chatbot Window -->
+    <div class="chatbot-window" id="chatbotWindow">
+        <div class="chat-header">
+            <h6><i class="fas fa-robot me-2"></i>AI Assistant</h6>
+            <span class="close-chat" id="closeChat">&times;</span>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                Hello! I'm your AI assistant. How can I help you today?
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Type your message...">
+            <button id="sendChat"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Navigation chatbot button is handled by the href attribute
+        // Floating chatbot button opens new window via onclick attribute
+    </script>
+</body>
+</html>

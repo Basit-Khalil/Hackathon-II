@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant - Todo Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .chat-container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .chat-header h4 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chat-header h4 i {
+            margin-right: 10px;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+        }
+        .message {
+            max-width: 70%;
+            padding: 12px 16px;
+            margin-bottom: 15px;
+            border-radius: 18px;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        .bot-message {
+            background: #e9ecef;
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        .message-time {
+            font-size: 0.7em;
+            opacity: 0.7;
+            margin-top: 5px;
+            display: block;
+        }
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #dee2e6;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 1px solid #ced4da;
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px;
+        }
+        .chat-input button {
+            margin-left: 10px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .chat-input button:hover {
+            background: #0056b3;
+        }
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 0 20px 15px;
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .quick-action-btn {
+            padding: 8px 15px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .quick-action-btn:hover {
+            background: #007bff;
+            color: white;
+        }
+        .typing-indicator {
+            display: none;
+            padding: 10px 15px;
+            background: #e9ecef;
+            border-radius: 18px;
+            margin-bottom: 15px;
+            width: fit-content;
+        }
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            float: left;
+            margin: 0 1px;
+            background-color: #9E9EA1;
+            display: block;
+            border-radius: 50%;
+            opacity: 0.4;
+        }
+        .typing-indicator span:nth-of-type(1) {
+            animation: typing 1s infinite;
+        }
+        .typing-indicator span:nth-of-type(2) {
+            animation: typing 1s infinite 0.2s;
+        }
+        .typing-indicator span:nth-of-type(3) {
+            animation: typing 1s infinite 0.4s;
+        }
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); opacity: 1; }
+        }
+        .welcome-message {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+        .welcome-message h5 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+        .feature-card i {
+            font-size: 24px;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h4><i class="fas fa-robot"></i> AI Assistant - Todo Manager</h4>
+        </div>
+        
+        <div class="quick-actions">
+            <button class="quick-action-btn" onclick="insertText('Add task: ')">Add Task</button>
+            <button class="quick-action-btn" onclick="insertText('Show my tasks')">Show Tasks</button>
+            <button class="quick-action-btn" onclick="insertText('Complete task: ')">Complete Task</button>
+            <button class="quick-action-btn" onclick="insertText('Set reminder for ')">Set Reminder</button>
+            <button class="quick-action-btn" onclick="insertText('Help')">Help</button>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <h5>Welcome to your AI Assistant!</h5>
+                <p>I'm here to help you manage your tasks efficiently.</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-plus-circle"></i>
+                        <small>Add Tasks</small>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-list"></i>
+                        <small>View Tasks</small>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-check-circle"></i>
+                        <small>Complete Tasks</small>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-bell"></i>
+                        <small>Set Reminders</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="message bot-message">
+                Hello! I'm your AI assistant. I can help you manage your tasks. Try saying "add task: Buy groceries" or "show my tasks".
+                <span class="message-time">Just now</span>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Type your message here..." autocomplete="off">
+            <button id="sendButton"><i class="fas fa-paper-plane me-1"></i> Send</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendButton = document.getElementById('sendButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        // Function to add a message to the chat
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+            
+            const timeSpan = document.createElement('span');
+            timeSpan.classList.add('message-time');
+            const now = new Date();
+            timeSpan.textContent = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            messageDiv.innerHTML = text + '<br>' + timeSpan.outerHTML;
+            chatMessages.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Function to show typing indicator
+        function showTyping() {
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Function to hide typing indicator
+        function hideTyping() {
+            typingIndicator.style.display = 'none';
+        }
+
+        // Global variable to store authentication token
+        let authToken = localStorage.getItem('authToken') || null;
+
+        // Function to make authenticated API requests
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const url = 'http://localhost:8000/api/v1' + endpoint;
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+
+            if (authToken) {
+                options.headers.Authorization = `Bearer ${authToken}`;
+            }
+
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                
+                if (response.status === 401 || response.status === 403) {
+                    // Token might be expired, remove it
+                    localStorage.removeItem('authToken');
+                    authToken = null;
+                    throw new Error('Authentication required. Please sign in.');
+                }
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API request error:', error);
+                throw error;
+            }
+        }
+
+        // Function to process user message and generate bot response
+        async function processMessage(message) {
+            const lowerMsg = message.toLowerCase().trim();
+            
+            // Handle different types of messages
+            if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('hey')) {
+                if (authToken) {
+                    return "Hello! I'm your AI assistant. You're signed in and ready to manage your tasks. Try saying 'add task: Buy groceries' or 'show my tasks'.";
+                } else {
+                    return "Hello! I'm your AI assistant. I can help you manage your tasks. First, you need to sign in. Try saying 'sign in email:your@email.com password:yourpassword'.";
+                }
+            } else if (lowerMsg.includes('sign in') || lowerMsg.includes('login')) {
+                // Extract email and password from message
+                const emailMatch = message.match(/email:\s*([^\s,]+)/i);
+                const passwordMatch = message.match(/password:\s*([^\s,]+)/i);
+                
+                if (!emailMatch || !passwordMatch) {
+                    return "Please provide your email and password. Format: 'sign in email:user@example.com password:mypassword'";
+                }
+                
+                try {
+                    const response = await apiRequest('/auth/sign-in', 'POST', {
+                        email: emailMatch[1],
+                        password: passwordMatch[1]
+                    });
+                    
+                    authToken = response.token;
+                    localStorage.setItem('authToken', authToken);
+                    return `Successfully signed in! You can now manage your tasks.`;
+                } catch (error) {
+                    return `Sign in failed: ${error.message}`;
+                }
+            } else if (lowerMsg.includes('sign up') || lowerMsg.includes('register')) {
+                // Extract name, email and password from message
+                const nameMatch = message.match(/name:\s*([^\s,]+)/i);
+                const emailMatch = message.match(/email:\s*([^\s,]+)/i);
+                const passwordMatch = message.match(/password:\s*([^\s,]+)/i);
+                
+                if (!nameMatch || !emailMatch || !passwordMatch) {
+                    return "Please provide your name, email and password. Format: 'sign up name:John Doe email:user@example.com password:mypassword'";
+                }
+                
+                try {
+                    const response = await apiRequest('/auth/sign-up', 'POST', {
+                        name: nameMatch[1],
+                        email: emailMatch[1],
+                        password: passwordMatch[1]
+                    });
+                    
+                    authToken = response.token;
+                    localStorage.setItem('authToken', authToken);
+                    return `Account created successfully! You're now signed in and can manage your tasks.`;
+                } catch (error) {
+                    return `Sign up failed: ${error.message}`;
+                }
+            } else if (lowerMsg.includes('add task') || lowerMsg.includes('create task')) {
+                if (!authToken) {
+                    return "Please sign in first before adding tasks. Use 'sign in email:your@email.com password:yourpassword'";
+                }
+                
+                const taskTitle = message.replace(/add task[:\s]*/i, '').replace(/create task[:\s]*/i, '').trim();
+                if (!taskTitle) {
+                    return "Please specify the task you want to add. Example: 'add task: Buy groceries'";
+                }
+                
+                try {
+                    const response = await apiRequest('/tasks', 'POST', {
+                        title: taskTitle,
+                        description: "",
+                        completed: false
+                    });
+                    
+                    return `Task "${response.title}" has been added to your list! (ID: ${response.id})`;
+                } catch (error) {
+                    return `Failed to add task: ${error.message}`;
+                }
+            } else if (lowerMsg.includes('my tasks') || lowerMsg.includes('show tasks') || lowerMsg.includes('list tasks')) {
+                if (!authToken) {
+                    return "Please sign in first to view your tasks. Use 'sign in email:your@email.com password:yourpassword'";
+                }
+                
+                try {
+                    const tasks = await apiRequest('/tasks');
+                    
+                    if (tasks.length === 0) {
+                        return "You have no tasks yet. Add one with 'add task: Your task name'";
+                    }
+                    
+                    const taskList = tasks.slice(0, 10).map((task, index) => 
+                        `${index + 1}. ${task.title} ${task.completed ? '(Completed)' : '(Pending)'}`
+                    ).join('\n');
+                    
+                    const remaining = tasks.length > 10 ? `\n...and ${tasks.length - 10} more tasks` : '';
+                    return `Your tasks:\n${taskList}${remaining}\n\nTotal: ${tasks.length} tasks`;
+                } catch (error) {
+                    return `Failed to get tasks: ${error.message}`;
+                }
+            } else if (lowerMsg.includes('complete') && lowerMsg.includes('task')) {
+                if (!authToken) {
+                    return "Please sign in first to update tasks. Use 'sign in email:your@email.com password:yourpassword'";
+                }
+                
+                // Extract task ID or title from message
+                const idMatch = message.match(/id:\s*(\d+)/i);
+                if (idMatch) {
+                    const taskId = parseInt(idMatch[1]);
+                    try {
+                        const response = await apiRequest(`/tasks/${taskId}`, 'PUT', {
+                            title: "", // We'll update only the completion status
+                            description: "",
+                            completed: true
+                        });
+                        
+                        return `Task "${response.title}" has been marked as completed!`;
+                    } catch (error) {
+                        return `Failed to update task: ${error.message}`;
+                    }
+                } else {
+                    return "Please specify the task ID to complete. Example: 'complete task id:5'";
+                }
+            } else if (lowerMsg.includes('delete') && lowerMsg.includes('task')) {
+                if (!authToken) {
+                    return "Please sign in first to delete tasks. Use 'sign in email:your@email.com password:yourpassword'";
+                }
+                
+                // Extract task ID from message
+                const idMatch = message.match(/id:\s*(\d+)/i);
+                if (idMatch) {
+                    const taskId = parseInt(idMatch[1]);
+                    try {
+                        await apiRequest(`/tasks/${taskId}`, 'DELETE');
+                        return `Task ID ${taskId} has been deleted from your list.`;
+                    } catch (error) {
+                        return `Failed to delete task: ${error.message}`;
+                    }
+                } else {
+                    return "Please specify the task ID to delete. Example: 'delete task id:5'";
+                }
+            } else if (lowerMsg.includes('update') && lowerMsg.includes('task')) {
+                if (!authToken) {
+                    return "Please sign in first to update tasks. Use 'sign in email:your@email.com password:yourpassword'";
+                }
+                
+                return "Please specify the task ID and what you'd like to change. Example: 'update task id:5 title:New Title'";
+            } else if (lowerMsg.includes('help') || lowerMsg.includes('commands') || lowerMsg.includes('what can you do')) {
+                let helpText = "I can help you with:\n";
+                if (!authToken) {
+                    helpText += "• Signing in: 'sign in email:user@example.com password:password'\n";
+                    helpText += "• Creating account: 'sign up name:John email:user@example.com password:password'\n";
+                } else {
+                    helpText += "• Adding tasks: 'add task: Task name'\n";
+                    helpText += "• Showing tasks: 'show my tasks'\n";
+                    helpText += "• Completing tasks: 'complete task id:5'\n";
+                    helpText += "• Deleting tasks: 'delete task id:5'\n";
+                    helpText += "• Setting reminders: 'remind me to do something'\n";
+                }
+                helpText += "• Getting help: 'help'";
+                return helpText;
+            } else if (lowerMsg.includes('remind') || lowerMsg.includes('reminder')) {
+                return "I've set a reminder for you. When would you like to be reminded?";
+            } else if (lowerMsg.includes('thank') || lowerMsg.includes('thanks')) {
+                return "You're welcome! Is there anything else I can help you with?";
+            } else if (lowerMsg.includes('bye') || lowerMsg.includes('goodbye') || lowerMsg.includes('see you')) {
+                return "Goodbye! Feel free to come back if you need help with your tasks.";
+            } else if (lowerMsg.includes('time') || lowerMsg.includes('date')) {
+                const now = new Date();
+                return `Current time is ${now.toLocaleString()}.`;
+            } else if (lowerMsg.includes('weather')) {
+                return "I can't check the weather, but I recommend using a weather app for accurate information.";
+            } else {
+                if (authToken) {
+                    return "I'm your AI assistant for managing tasks. You can ask me to add tasks, show your current tasks, mark tasks as complete, or delete tasks. Try saying 'add task: Buy groceries' or 'show my tasks'.";
+                } else {
+                    return "I'm your AI assistant. First, please sign in with 'sign in email:your@email.com password:yourpassword'";
+                }
+            }
+        }
+
+        // Function to send a message
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, 'user');
+            chatInput.value = '';
+
+            // Show typing indicator
+            showTyping();
+
+            try {
+                // Process the message (which may involve API calls)
+                const response = await processMessage(message);
+                
+                // Hide typing indicator and show response
+                hideTyping();
+                addMessage(response, 'bot');
+            } catch (error) {
+                hideTyping();
+                addMessage(`Error: ${error.message}`, 'bot');
+            }
+        }
+
+        // Function to insert text into input field
+        function insertText(text) {
+            chatInput.value = text;
+            chatInput.focus();
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Focus input field on load
+        window.onload = function() {
+            chatInput.focus();
+        };
+    </script>
+</body>
+</html>

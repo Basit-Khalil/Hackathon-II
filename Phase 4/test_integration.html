@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chatbot Integration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Chatbot Integration</h1>
+    
+    <div class="test-section">
+        <h3>Test Backend Connection</h3>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <button onclick="testAuth()">Test Auth Endpoint</button>
+        <button onclick="testTasks()">Test Tasks Endpoint</button>
+        <div id="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Try the Dashboard & Chatbot</h3>
+        <p>Click the buttons below to open the dashboard and chatbot pages:</p>
+        <a href="./dashboard.html" target="_blank"><button>Open Dashboard</button></a>
+        <a href="./chatbot.html" target="_blank"><button>Open Chatbot</button></a>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:8000';
+
+        async function testHealth() {
+            try {
+                const response = await fetch(`${BASE_URL}/health`);
+                const data = await response.json();
+                document.getElementById('result').innerHTML = 
+                    `<strong>Health Check:</strong> ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+
+        async function testAuth() {
+            try {
+                const response = await fetch(`${BASE_URL}/api/v1/auth/me`, {
+                    headers: {
+                        'Authorization': 'Bearer invalid-token'
+                    }
+                });
+                const data = await response.json();
+                document.getElementById('result').innerHTML = 
+                    `<strong>Auth Test (should fail):</strong> ${JSON.stringify(data, null, 2)} (Status: ${response.status})`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+
+        async function testTasks() {
+            try {
+                const response = await fetch(`${BASE_URL}/api/v1/tasks`, {
+                    headers: {
+                        'Authorization': 'Bearer invalid-token'
+                    }
+                });
+                const data = await response.json().catch(() => ({}));
+                document.getElementById('result').innerHTML = 
+                    `<strong>Tasks Test (should fail):</strong> ${JSON.stringify(data, null, 2)} (Status: ${response.status})`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
